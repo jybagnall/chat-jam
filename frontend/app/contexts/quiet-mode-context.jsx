@@ -1,24 +1,23 @@
-import { createContext, useCallback, useEffect, useState } from "react";
-import {
-  loadMode,
-  saveMode,
-  DEFAULT_QUIET_MODE,
-} from "@frontend/localforage/quietModeStore";
+import { createContext, useEffect, useState } from "react";
+import { sendModeToSW } from "@frontend/services/pushClient";
+import { indexedDbGet } from "@frontend/utils/indexedDb";
 
 const QuietModeContext = createContext();
 
 export const QuietModeProvider = ({ children }) => {
-  const [mode, setMode] = useState(DEFAULT_QUIET_MODE);
+  const [mode, setMode] = useState("");
 
-  const toggleMode = useCallback(() => {
-    setMode((mode) => (mode === "alert" ? "quiet" : "alert"));
-  }, []);
+  const toggleMode = async () => {
+    const newMode = mode === "alert" ? "quiet" : "alert";
+    setMode(newMode);
+    await sendModeToSW(newMode);
+  };
 
   useEffect(() => {
     let mounted = true;
 
     async function getCurrentMode() {
-      const currentMode = await loadMode();
+      const currentMode = await indexedDbGet("quietMode", "quietMode");
       if (mounted) setMode(currentMode);
     }
 
@@ -28,10 +27,6 @@ export const QuietModeProvider = ({ children }) => {
       mounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    saveMode(mode);
-  }, [mode]);
 
   return (
     <QuietModeContext.Provider value={{ mode, setMode, toggleMode }}>

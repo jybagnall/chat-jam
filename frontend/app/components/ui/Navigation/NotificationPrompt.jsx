@@ -1,14 +1,26 @@
-import { subscribePush } from "@frontend/services/pushClient";
+import QuietModeContext from "@frontend/contexts/quiet-mode-context";
+import { denyNotification } from "@frontend/localforage/quietModeStore";
+import {
+  sendModeToSW,
+  subscribePush,
+  unsubscribePush,
+} from "@frontend/services/pushClient";
+// import { useContext } from "react";
 
-export default function NotificationPrompt({ userId, setNotifyStatus }) {
+export default function NotificationPrompt({ userId }) {
   const handleAllow = async () => {
     const permission = await Notification.requestPermission();
-    setNotifyStatus("granted");
-    if (permission === "granted") await subscribePush(userId);
+
+    if (permission === "granted") {
+      await subscribePush(userId);
+      await sendModeToSW("alert");
+    }
   };
 
   const handleDeny = async () => {
-    setNotifyStatus("denied");
+    denyNotification();
+    await unsubscribePush(userId);
+    await sendModeToSW("quiet");
   };
 
   return (

@@ -1,35 +1,56 @@
-import { useEffect, useContext, useState } from "react";
-import {
+import { useContext, useEffect } from "react";
+import PushService, {
   registerSW,
-  subscribePush,
-  sendModeToSW,
   checkNotifyPermission,
 } from "@frontend/services/pushClient";
-import QuietModeContext from "@frontend/contexts/quiet-mode-context";
+import AuthContext from "@frontend/contexts/auth-context";
+import toast from "react-hot-toast";
 
-export default function usePushNotifications(userId) {
-  const { mode } = useContext(QuietModeContext);
-  const [notifyStatus, setNotifyStatus] = useState(() =>
-    checkNotifyPermission()
-  ); // 렌더링 시 한번만 계산
+export default function usePushNotifications() {
+  const authContext = useContext(AuthContext);
+  const abortController = new AbortController();
+  const pushService = new PushService(abortController, authContext);
 
-  // 1) SW 등록 (앱 시작 시)
+  const notifyStatus = checkNotifyPermission(); // 'default', 'granted', 'denied'
+
   useEffect(() => {
-    registerSW();
-  }, []);
+    const setNotificationPermission = async () => {
+      if (notifyStatus === "granted") {
+        try {
+          await registerSW(); // 1) SW 등록 (앱 시작 시)
+          await pushService.subscribePush(); // 2. push 구독
+        } catch (e) {
+          if (!abortController.signal.aborted) {
+            console.error(e);
+          }
+        } // 최신 구독 정보를 보냄.
+      }
 
-  // 2. push 구독
-  useEffect(() => {
-    if (!userId) return;
-    if (notifyStatus === "granted") {
-      subscribePush(userId);
-    }
-  }, [userId, notifyStatus]);
+      if (notifyStatus === "default") {
+        const permission = await Notification.requestPermission();
 
-  // 3) 모드가 바뀌면 서비스워커에 전달
-  useEffect(() => {
-    if (mode) sendModeToSW(mode);
-  }, [mode]);
+        if (permission === "granted") {
+          try {
+            await registerSW();
+            await pushService.subscribePush(); // 2. push 구독
+            toast.success("Message alert is activated!");
+          } catch (e) {
+            if (!abortController.signal.aborted) {
+              console.error(e);
+            }
+          }
+        }
+      }
 
-  return { notifyStatus, setNotifyStatus };
+      if (notifyStatus === "denied") {
+        return;
+      }
+    };
+
+    setNotificationPermission();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [notifyStatus]);
 }

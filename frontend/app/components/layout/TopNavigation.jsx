@@ -21,7 +21,8 @@ export default function TopNavigation() {
           </span>
         </div>
         <SettingsPanel />
-        <QuietModeToggle />
+
+        {"Notification" in window && <QuietModeToggle />}
       </div>
 
       {searchModalOpens && (

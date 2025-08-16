@@ -1,5 +1,7 @@
-// Voluntary Application Server Identification
+import Client from "./client";
+
 const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+// Voluntary Application Server Identification
 
 // endpoint: 특정 브라우저에서 구독을 하면 브라우저 전용 URL이 만들어짐.
 
@@ -16,11 +18,56 @@ function urlBase64ToUint8Array(base64String) {
   return output;
 }
 
+class PushService {
+  constructor(abortController, authContext) {
+    this.client = new Client(abortController, authContext);
+  }
+  // 서버에 구독 정보를 전송 -> 나중에 푸시 메시지를 보낼 때 쓸 예정.
+  async subscribePush() {
+    if (!("serviceWorker" in navigator)) return null; // 알림 권한 확인
+
+    const registered = await navigator.serviceWorker.ready; // 등록된 SW 객체
+
+    //  브라우저가 푸시 구독 정보를 서버에 저장해두었는지 확인
+    let activeSubscription = await registered.pushManager.getSubscription();
+
+    if (!activeSubscription) {
+      activeSubscription = await registered.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
+    }
+
+    await this.client.post(`/api/push/subscribe`, {
+      subscription: activeSubscription,
+    });
+  }
+
+  // 브라우저의 푸시 구독을 취소하고, 서버에도 구독 취소 사실을 알려줌.
+  async unsubscribePush() {
+    const registered = await navigator.serviceWorker.ready;
+    const currentSubscription = await registered.pushManager.getSubscription();
+
+    if (currentSubscription) {
+      await currentSubscription.unsubscribe(); // 브라우저 측 해제
+      await this.client.delete(`/api/push/unsubscribe`, {
+        endpoint: currentSubscription.endpoint,
+      });
+    }
+  }
+}
+export default PushService;
+
 // 서비스 워커를 등록하는 함수.
-// 브라우저가 서비스 워커를 지원하지 않으면 종료.
+// 브라우저가 서비스 워커를 지원하지 않으면 null 반환 후 종료.
 // `/sw.js` 파일을 서비스 워커로 등록하고, 그 Promise를 반환.
 export async function registerSW() {
   if (!("serviceWorker" in navigator)) return null;
+  const existing = await navigator.serviceWorker.getRegistration("/sw.js", {
+    type: "module",
+  });
+  if (existing) return existing;
+
   return navigator.serviceWorker.register("/sw.js");
 }
 
@@ -32,50 +79,15 @@ export function checkNotifyPermission() {
   return Notification.permission; // 'default' | 'granted' | 'denied'
 }
 
-// 서비스워커&알림 권한이 존재=> 푸시 구독을 진행하고 구독 정보를 반환하는 함수.
-// 알림권한 확인→ 서비스워커 존재 확인→ 구독 유무 확인→ 서버에 구독 정보 등록.
-// navigator: 브라우저의 전역 객체로 사용자의 브라우저와 관련된 기능/정보 제공.
+export async function isPushNotificationEnabled() {
+  if (!("serviceWorker" in navigator) || !("Notification" in window))
+    return false;
+  if (Notification.permission !== "granted") return false;
 
-// 브라우저가 서비스워커를 지원("serviceWorker" in navigator)하지 않으면 중단.
-// 알림 권한 상태를 확인 후 권한이(permissionStatus) 허용되지 않으면 중단.
-// 이미 등록된 서비스워커 객체를 기다리고(registerd)
-// 서버에 브라우저가 푸시 구독 정보를 저장해둔 게 있는지 확인.
-export async function subscribePush(userId) {
-  if (!("serviceWorker" in navigator)) return null;
-
-  const registered = await navigator.serviceWorker.ready;
-  let activeSubscription = await registered.pushManager.getSubscription();
-  if (!activeSubscription) {
-    activeSubscription = await registered.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-    });
-  }
-
-  // 서버에 누가(userId) 구독 정보(sub)를 쓰는지 구독 정보를 전송.
-  // 서버가 이 정보를 저장해 두면, 나중에 푸시 메시지를 보낼 수 있음.
-  await fetch("/api/push/subscribe", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, subscription: activeSubscription }),
-  });
-
-  return activeSubscription; // 구독 객체의 반환.
-}
-
-// 브라우저의 푸시 구독을 취소하고, 서버에도 구독 취소 사실을 알려줌.
-// 이미 등록된 서비스워커가 준비되길 기다림, 브라우저의 푸시 구독 정보 가져옴.
-export async function unsubscribePush(userId) {
   const registered = await navigator.serviceWorker.ready;
   const currentSubscription = await registered.pushManager.getSubscription();
-  if (currentSubscription) {
-    await fetch("/api/push/unsubscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, endpoint: currentSubscription.endpoint }),
-    });
-    await currentSubscription.unsubscribe();
-  }
+
+  return Boolean(currentSubscription); // 구독이 존재하는지의 여부.
 }
 
 // 특정 모드('alert'/'quiet')를 서비스워커에 전달해 저장하거나 동작을 변경
@@ -86,8 +98,30 @@ export async function sendModeToSW(mode) {
   try {
     const registered = await navigator.serviceWorker.ready;
     const sw = registered.active || navigator.serviceWorker.controller;
-    if (sw) sw.postMessage({ type: "SET_MODE", mode });
+
+    if (sw) {
+      sw.postMessage({ type: "SET_MODE", mode });
+    } else {
+      // 서비스 워커가 설치되었지만 아직 페이지를 컨트롤하지 않는 상태
+      const handler = () => {
+        navigator.serviceWorker.controller?.postMessage({
+          type: "SET_MODE",
+          mode,
+        });
+        navigator.serviceWorker.removeEventListener(
+          "controllerchange",
+          handler
+        );
+      };
+
+      navigator.serviceWorker.addEventListener("controllerchange", handler);
+    }
   } catch (e) {
     console.warn("Failed to send mode to Service Worker", e);
   }
 }
+//  서비스 워커가 설치되었지만 아직 페이지를 컨트롤하지 않는 상태라면
+// "controllerchange" 이벤트를 기다렸다가 handler 실행.
+// "controllerchange"→ 서비스 워커가 페이지의 컨트롤러로 승격될 때 발생.
+
+// .postMessage()의 역할: 서비스워커(백엔드)로 정보를 보냄.

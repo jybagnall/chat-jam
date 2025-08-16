@@ -27,9 +27,7 @@ export default function Friends() {
     userData: {},
   });
 
-  const { notifyStatus, setNotifyStatus } = usePushNotifications(
-    decodedUser.id
-  );
+  usePushNotifications(decodedUser?.id);
 
   useEffect(() => {
     document.title = "ChatJam, Talk Smart";
@@ -84,13 +82,6 @@ export default function Friends() {
 
   return (
     <>
-      {notifyStatus === "default" && (
-        <NotificationPrompt
-          userId={decodedUser.id}
-          setNotifyStatus={setNotifyStatus}
-        />
-      )}
-
       {!page.isLoading && !page.error && (
         <ul
           role="list of friends"
