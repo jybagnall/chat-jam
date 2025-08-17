@@ -2,7 +2,7 @@ import { useState } from "react";
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import SettingsPanel from "@frontend/components/ui/Navigation/SettingsPanel";
 import SearchUserModal from "@frontend/components/ui/Navigation/SearchUserModal";
-import QuietModeToggle from "@frontend/components/ui/Navigation/QuietModeToggle";
+// import QuietModeToggle from "@frontend/components/ui/Navigation/QuietModeToggle";
 
 export default function TopNavigation() {
   const [searchModalOpens, setSearchModalOpens] = useState(false);
@@ -22,7 +22,7 @@ export default function TopNavigation() {
         </div>
         <SettingsPanel />
 
-        {"Notification" in window && <QuietModeToggle />}
+        {/* {"Notification" in window && <QuietModeToggle />} */}
       </div>
 
       {searchModalOpens && (

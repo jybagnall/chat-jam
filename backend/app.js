@@ -52,7 +52,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-initWebPush(); // 서버가 시작하면 한 번만 설정(푸시를 보낼 때 쓸 서버 정보)
+// initWebPush(); // 서버가 시작하면 한 번만 설정(푸시를 보낼 때 쓸 서버 정보)
 
 app.use("/api/accounts", accountRoutes);
 app.use("/api/users", usersRoutes);

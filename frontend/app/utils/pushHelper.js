@@ -1,15 +1,9 @@
-import Client from "./client";
-
-const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-// Voluntary Application Server Identification
-
 // endpoint: 특정 브라우저에서 구독을 하면 브라우저 전용 URL이 만들어짐.
 
 // Base64URL 문자열을 Uint8Array(바이너리 배열)로 변환하는 함수.
 // 웹 푸시를 구독할 때 applicationServerKey 값을 Uint8Array 형식으로 요구함. 왜?
-// 'VAPID_PUBLIC_KEY'는 암호화된 키(배송장, 네트워크에서 안전하므로)
 
-function urlBase64ToUint8Array(base64String) {
+export function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
@@ -17,46 +11,6 @@ function urlBase64ToUint8Array(base64String) {
   for (let i = 0; i < raw.length; ++i) output[i] = raw.charCodeAt(i);
   return output;
 }
-
-class PushService {
-  constructor(abortController, authContext) {
-    this.client = new Client(abortController, authContext);
-  }
-  // 서버에 구독 정보를 전송 -> 나중에 푸시 메시지를 보낼 때 쓸 예정.
-  async subscribePush() {
-    if (!("serviceWorker" in navigator)) return null; // 알림 권한 확인
-
-    const registered = await navigator.serviceWorker.ready; // 등록된 SW 객체
-
-    //  브라우저가 푸시 구독 정보를 서버에 저장해두었는지 확인
-    let activeSubscription = await registered.pushManager.getSubscription();
-
-    if (!activeSubscription) {
-      activeSubscription = await registered.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-      });
-    }
-
-    await this.client.post(`/api/push/subscribe`, {
-      subscription: activeSubscription,
-    });
-  }
-
-  // 브라우저의 푸시 구독을 취소하고, 서버에도 구독 취소 사실을 알려줌.
-  async unsubscribePush() {
-    const registered = await navigator.serviceWorker.ready;
-    const currentSubscription = await registered.pushManager.getSubscription();
-
-    if (currentSubscription) {
-      await currentSubscription.unsubscribe(); // 브라우저 측 해제
-      await this.client.delete(`/api/push/unsubscribe`, {
-        endpoint: currentSubscription.endpoint,
-      });
-    }
-  }
-}
-export default PushService;
 
 // 서비스 워커를 등록하는 함수.
 // 브라우저가 서비스 워커를 지원하지 않으면 null 반환 후 종료.
@@ -86,7 +40,6 @@ export async function isPushNotificationEnabled() {
 
   const registered = await navigator.serviceWorker.ready;
   const currentSubscription = await registered.pushManager.getSubscription();
-
   return Boolean(currentSubscription); // 구독이 존재하는지의 여부.
 }
 
@@ -108,6 +61,7 @@ export async function sendModeToSW(mode) {
           type: "SET_MODE",
           mode,
         });
+
         navigator.serviceWorker.removeEventListener(
           "controllerchange",
           handler

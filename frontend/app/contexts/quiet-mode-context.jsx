@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { sendModeToSW } from "@frontend/services/pushClient";
+import { sendModeToSW } from "@frontend/utils/pushHelper";
 import { indexedDbGet } from "@frontend/utils/indexedDb";
 
 const QuietModeContext = createContext();

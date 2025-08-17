@@ -1,10 +1,14 @@
 import { useContext, useEffect } from "react";
-import PushService, {
+import {
   registerSW,
   checkNotifyPermission,
-} from "@frontend/services/pushClient";
+  sendModeToSW,
+} from "@frontend/utils/pushHelper";
+
 import AuthContext from "@frontend/contexts/auth-context";
 import toast from "react-hot-toast";
+import { indexedDbSet } from "@frontend/utils/indexedDb";
+import PushService from "@frontend/services/push.client.service";
 
 export default function usePushNotifications() {
   const authContext = useContext(AuthContext);
@@ -33,9 +37,13 @@ export default function usePushNotifications() {
           try {
             await registerSW();
             await pushService.subscribePush(); // 2. push 구독
+            await sendModeToSW("alert");
+            await indexedDbSet("quietMode", "alert");
             toast.success("Message alert is activated!");
           } catch (e) {
             if (!abortController.signal.aborted) {
+              await sendModeToSW("quiet");
+              await indexedDbSet("quietMode", "quiet");
               console.error(e);
             }
           }

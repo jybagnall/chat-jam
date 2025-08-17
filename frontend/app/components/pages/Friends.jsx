@@ -9,7 +9,7 @@ import ListedFriend from "@frontend/components/ui/ListedFriend";
 import MyProfile from "@frontend/components/ui/MyProfile";
 import FriendProfile from "@frontend/components/ui/FriendProfile";
 import UsersService from "@frontend/services/users.service";
-import usePushNotifications from "@frontend/hooks/usePushNotifications";
+//import usePushNotifications from "@frontend/hooks/usePushNotifications";
 
 export default function Friends() {
   const authContext = useContext(AuthContext);
@@ -27,7 +27,7 @@ export default function Friends() {
     userData: {},
   });
 
-  usePushNotifications(decodedUser?.id);
+  //usePushNotifications(decodedUser?.id);
 
   useEffect(() => {
     document.title = "ChatJam, Talk Smart";
