@@ -28,7 +28,7 @@ export default function SearchUserModal({
           <div className="flex min-h-screen items-center justify-center p-4 text-center">
             <DialogPanel
               transition
-              className="relative w-[90%] max-w-sm min-h-[20rem] sm:min-h-[24rem] transform overflow-hidden rounded-lg bg-white px-4 pt-4 text-left shadow-xl transition-all sm:p-6"
+              className="relative w-[90%] max-w-sm h-[18rem] transform overflow-hidden rounded-lg bg-white px-4 pt-4 text-left shadow-xl transition-all sm:p-6"
             >
               <div className="px-4 sm:px-6">
                 <div className="ml-3 flex h-7 items-center">

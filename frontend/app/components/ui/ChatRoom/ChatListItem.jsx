@@ -1,5 +1,5 @@
 import { UserIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
-import TimestampInChatSum from "./ChatRoom/TimestampInChatSum";
+import TimestampInChatSum from "./TimestampInChatSum";
 
 export default function ChatListItem({
   lastMsgAt,

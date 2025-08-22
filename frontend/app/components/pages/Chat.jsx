@@ -7,7 +7,7 @@ import UnreadContext from "@frontend/contexts/unread-context";
 import Spinner from "@frontend/components/shared/Spinner";
 import ChatService from "@frontend/services/chat.service";
 import ChatRoom from "@frontend/components/ui/ChatRoom/ChatRoom";
-import ChatListItem from "@frontend/components/ui/ChatListItem";
+import ChatListItem from "@frontend/components/ui/ChatRoom/ChatListItem";
 import useUpdateChatSummaryHook from "@frontend/hooks/useUpdateChatSummaryHook";
 import useUpdateEnvelopeHook from "@frontend/hooks/useUpdateEnvelopeHook";
 
@@ -69,13 +69,9 @@ export default function Chat() {
 
     fetchPageData();
 
-    const onFocus = () => fetchPageData();
-    window.addEventListener("focus", onFocus); // 다른 앱에서 돌아옴
-
     socket.on("connect", fetchPageData); // 소켓 재연결 시 동기화
 
     return () => {
-      window.removeEventListener("focus", onFocus);
       socket.off("connect", fetchPageData);
     };
   }, []);

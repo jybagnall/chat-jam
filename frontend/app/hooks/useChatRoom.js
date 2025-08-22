@@ -15,6 +15,7 @@ import {
   normalizeLocalMsg,
   normalizeServerMsg,
 } from "@frontend/utils/unifyMsgSchema";
+import useUpdateSenderChatRoom from "./useUpdateSenderChatRoom";
 
 export function useChatRoom(friendId, authContext, closeModal) {
   const { userExitedOnPurpose } = useContext(SocketContext);
@@ -86,7 +87,9 @@ export function useChatRoom(friendId, authContext, closeModal) {
   }, [friendId]);
 
   // socket hooks
+  useUpdateSenderChatRoom(setLocalMsgs);
   useMsgToFriendHook(setRoomState, roomState.myInfo.id);
+
   useEmitUnreadMsgHook(
     roomState.msgHistory,
     roomState.roomId,
@@ -138,8 +141,11 @@ export function useChatRoom(friendId, authContext, closeModal) {
 
     const fromServer = roomState.msgHistory.map(normalizeServerMsg);
     const fromLocal = localMsgs.map(normalizeLocalMsg);
+    const serverIds = new Set(fromServer.map((m) => String(m.id)));
+    const filteredLocal = fromLocal.filter((m) => !serverIds.has(String(m.id)));
+    // 메시지가 일단 보내지면 서버에 저장된 아이디로 로컬 아이디가 바뀜. 중복 제거 필수.
 
-    return [...fromServer, ...fromLocal].sort(
+    return [...fromServer, ...filteredLocal].sort(
       (a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );

@@ -7,8 +7,8 @@ import ChatRoom from "@frontend/components/ui/ChatRoom/ChatRoom";
 import FriendsContext from "@frontend/contexts/friends-context";
 import AuthContext from "@frontend/contexts/auth-context";
 import UsersService from "@frontend/services/users.service";
-import FriendProfileAction from "@frontend/components/ui/FriendProfileAction";
-import EnlargedImgModal from "@frontend/components/ui/EnlargedImgModal";
+import FriendProfileAction from "@frontend/components/ui/FriendsPage/FriendProfileAction";
+import EnlargedImgModal from "@frontend/components/ui/FriendsPage/EnlargedImgModal";
 
 export default function FriendProfile({
   userInfo,

@@ -89,7 +89,7 @@ export default function ChatRoom({ friendObj, startChatRoom, closeModal }) {
                   // map 콜백의 결과물을 반환
                   return (
                     <div
-                      key={msg.id || msg.tempId}
+                      key={String(msg.id) || msg.tempId}
                       className="flex flex-col gap-2"
                     >
                       {showSeparator && (

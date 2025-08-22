@@ -14,3 +14,4 @@ export default function useMsgToMeHook() {
     return () => socket.off("msgToMe", handleNewMsg);
   }, []);
 }
+// not using now

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import DeleteAccountModal from "@frontend/components/ui/DeleteAccountModal";
-import ChangePasswordModal from "@frontend/components/ui/ChangePasswordModal";
+import DeleteAccountModal from "@frontend/components/ui/Navigation/DeleteAccountModal";
+import ChangePasswordModal from "@frontend/components/ui/Navigation/ChangePasswordModal";
 
 export default function AccountSettings() {
   const [changePwModalOpens, setChangePwModalOpens] = useState(false);

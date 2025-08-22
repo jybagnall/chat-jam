@@ -1,7 +1,7 @@
 import { ExclamationCircleIcon, UserIcon } from "@heroicons/react/24/solid";
 import { format } from "date-fns";
 import { useState } from "react";
-import FriendProfile from "../FriendProfile";
+import FriendProfile from "../FriendsPage/FriendProfile";
 
 export default function FriendMsgBubble({
   friendInfo,

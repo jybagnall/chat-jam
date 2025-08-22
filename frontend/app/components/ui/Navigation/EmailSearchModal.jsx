@@ -59,14 +59,14 @@ export default function EmailSearchModal({ open, onClose }) {
       <Dialog open={open} onClose={onClose} className="relative z-10">
         <DialogBackdrop
           transition
-          className="fixed inset-0 bg-gray-400/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+          className="fixed inset-0 bg-gray-400/100 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
         />
 
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4 text-center">
             <DialogPanel
               transition
-              className="relative w-[90%] max-w-sm min-h-[20rem] sm:min-h-[24rem] transform overflow-hidden rounded-lg bg-white px-4 pt-4 text-left shadow-xl transition-all sm:p-6"
+              className="relative w-[90%] max-w-sm h-[14rem] transform overflow-hidden rounded-lg bg-white px-4 pt-4 text-left shadow-xl transition-all sm:p-6"
             >
               <div className="px-4 sm:px-6">
                 <div className="ml-3 flex h-7 items-center">

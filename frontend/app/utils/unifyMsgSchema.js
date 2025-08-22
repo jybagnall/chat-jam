@@ -27,6 +27,6 @@ export function normalizeLocalMsg(localMsg) {
     status: localMsg.status,
     created_at: localMsg.created_at,
     is_deleted: false,
-    is_read: false,
+    is_read: localMsg.is_read ?? false,
   };
 }

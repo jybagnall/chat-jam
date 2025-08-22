@@ -5,9 +5,9 @@ import FriendsContext from "@frontend/contexts/friends-context";
 import AccountService from "@frontend/services/account.service";
 import Spinner from "@frontend/components/shared/Spinner";
 import ErrorPage from "@frontend/components/notifications/ErrorPage";
-import ListedFriend from "@frontend/components/ui/ListedFriend";
-import MyProfile from "@frontend/components/ui/MyProfile";
-import FriendProfile from "@frontend/components/ui/FriendProfile";
+import ListedFriend from "@frontend/components/ui/FriendsPage/ListedFriend";
+import MyProfile from "@frontend/components/ui/FriendsPage/MyProfile";
+import FriendProfile from "@frontend/components/ui/FriendsPage/FriendProfile";
 import UsersService from "@frontend/services/users.service";
 //import usePushNotifications from "@frontend/hooks/usePushNotifications";
 

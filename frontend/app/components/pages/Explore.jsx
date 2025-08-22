@@ -1,4 +1,4 @@
-import ExploredUserProfile from "@frontend/components/ui/ExploredUserProfile";
+import ExploredUserProfile from "@frontend/components/ui/ExplorePage/ExploredUserProfile";
 import UsersService from "@frontend/services/users.service";
 import { useContext, useEffect, useState } from "react";
 import Spinner from "@frontend/components/shared/Spinner";

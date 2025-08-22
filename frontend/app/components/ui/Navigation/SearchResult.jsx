@@ -1,5 +1,5 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
-import ListedFriend from "@frontend/components/ui/ListedFriend";
+import ListedFriend from "@frontend/components/ui/FriendsPage/ListedFriend";
 
 export default function SearchResult({
   searchState,

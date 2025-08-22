@@ -50,7 +50,7 @@ export default function socketHandler(io) {
           serverId: insertedMsg.id,
           serverCreatedAt: insertedMsg.created_at,
         });
-        // 메시지는 실시간으로 업데이트되는데 아이콘이 업데이트 안됨.
+
         if (!senderIsBlocked) {
           //📍친구가 방에 없는지를 확인하고 텍스트도 같이 보내자
           const socketsInRoom = io.sockets.adapter.rooms.get(`room_${room_id}`);
@@ -64,6 +64,10 @@ export default function socketHandler(io) {
 
           if (isFriendInChatRoom) {
             io.to(`user_${friend_id}`).emit("messageToFriend", insertedMsg);
+            io.to(`user_${user_id}`).emit("updateSenderChatRoom", {
+              ...insertedMsg,
+              is_read: true,
+            });
           } else {
             await sendPushToUser(friend_id, text);
             io.to(`user_${friend_id}`).emit("notifyMessage", insertedMsg);
