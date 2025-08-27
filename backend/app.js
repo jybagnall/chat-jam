@@ -27,7 +27,8 @@ const io = new SocketIOServer(server, {
   },
 }); // create Socket.IO server
 socketHandler(io);
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
+const host = process.env.HOST || "0.0.0.0";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -59,8 +60,8 @@ app.use("/api/users", usersRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/push", pushRoutes);
 
-server.listen(PORT, () => {
-  console.log(`🚩Server running on port ${PORT}`);
+server.listen(PORT, host, () => {
+  console.log(`🚩Server running on ${host}:${PORT}`);
 });
 
 export default app;

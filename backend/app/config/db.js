@@ -4,16 +4,16 @@ const { Pool } = pkg;
 
 dotenv.config();
 
-const isProduction = process.env.NODE_ENV === "production";
-const ssl = isProduction ? true : false;
+//const isProduction = process.env.NODE_ENV === "production";
+const useSSL = process.env.DB_SSL === "true";
 
 const pool = new Pool({
-  host: process.env.DB_HOST || "postgres",
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 5432,
-  ssl,
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
   max: 10, // connectionLimit
   idleTimeoutMillis: 30000, // if db connection sits unused for more than 30 seconds, remove it from the pool.
   connectionTimeoutMillis: 20000, // how long to wait for connection

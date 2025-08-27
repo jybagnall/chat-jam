@@ -2,37 +2,40 @@ services:
   backend:
     build: ./backend
     working_dir: /app
-    command: npm run dev
-    ports:
-      - "5000:5000"
-      - "9229:9229"
-
+    command: node app.js
     volumes:
       - ./backend:/app
     environment:
-      - NODE_ENV=development # ## - NODE_ENV=production
+      - NODE_ENV=production
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=jiyoung
       - DB_PASS=202486
       - DB_NAME=chatjam
       - DB_SSL=false
+      - PGSSLMODE=disabled
       - DOCKERIZED=true
     depends_on:
       - postgres
+    ports:
+      - "127.0.0.1:5000:5000" # 외부 미공개, Nginx가 프록시
+    restart: unless-stopped
+  # NODE_ENV=development
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
+      - "127.0.0.1:3000:80" # 컨테이너 Nginx는 80, 호스트 3000에 매핑
+    # volumes:
+    #   - ./frontend:/app
     depends_on:
       - backend
+    restart: unless-stopped
 
   postgres:
     image: postgres:15
-    container_name: postgres
+    #container_name: postgres
     restart: always
     environment:
       POSTGRES_USER: jiyoung
@@ -40,9 +43,8 @@ services:
       POSTGRES_DB: chatjam
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432" # remove this in production
+    #ports:
+    # - "5432:5432" # remove this in production
 
 volumes:
-  pgdata:
-# need to modify this file when deploying
+  pgdata: {}
