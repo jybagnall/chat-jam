@@ -18,7 +18,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "127.0.0.1:5000:5000" # 외부 미공개, Nginx가 프록시
+      - "5000:5000" # 외부 미공개, Nginx가 프록시
     restart: unless-stopped
   # NODE_ENV=development
 
@@ -26,7 +26,7 @@ services:
     build:
       context: ./frontend
     ports:
-      - "127.0.0.1:3000:80" # 컨테이너 Nginx는 80, 호스트 3000에 매핑
+      - "3000:80" # 컨테이너 Nginx는 80, 호스트 3000에 매핑
     # volumes:
     #   - ./frontend:/app
     depends_on:
